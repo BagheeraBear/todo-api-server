@@ -3,6 +3,9 @@
 var express=require('express');
 // middleware: body-parser
 var bodyParser = require('body-parser');
+// Underscore.js - Refactor get-todos-by-id-method, and post-todos
+var _ = require('underscore');
+
 var app=express();
 var PORT = process.env.PORT || 3000;
 var todos=[];
@@ -25,39 +28,46 @@ app.get('/todos/:id', function(req,res){
   //:id is available here
   var todoId=parseInt(req.params.id, 10);
 
-  var matchedTodo;
+  var matchedTodo=_.findWhere(todos, {id:todoId} );
 
-  todos.forEach(function(todo){
-    if(todoId===todo.id){
-      matchedTodo=todo;
-    }
-  });
+  // todos.forEach(function(todo){
+  //   if(todoId===todo.id){
+  //     matchedTodo=todo;
+  //   }
+  // });
 
   if(matchedTodo){
       res.json(matchedTodo);
-  } else{
+  }
+  else{
       res.status(404).send();
   }
 
-
-  // Min lite bättre lösning, snabbare
-  // var foundId=false;
-  // for(var i=0; i<todos.length;i++){
-  //   if(todos[i].id==todoId){
-  //     res.json(todos[i]);
-  //     foundId=true;
-  //   }
-  // }
-  // if(foundId==false){
-  //   res.status(405).send();
-  // }
-  //res.send('Asking for a todo with id of ' + req.params.id);
 });
+// Underscore
+// where_.where(list, properties)
+// Looks through each value in the list, returning an array of all the
+// values that contain all of the key-value pairs listed in properties.
+
+// _.where(listOfPlays, {author: "Shakespeare", year: 1611});
+// => [{title: "Cymbeline", author: "Shakespeare", year: 1611},
+//     {title: "The Tempest", author: "Shakespeare", year: 1611}]
+
+
 
 // POST http-method /todos
+// refactor with underscore, added validation
 app.post('/todos', function(req, res){
-  var body=req.body;
+  // Use _.pick to only pick description and completed
 
+  var body=_.pick(req.body, 'description', 'completed');
+
+  if(!_.isBoolean(body.completed) || !_.isString(body.description) || body.description.trim().length===0){
+    return res.status(400).send();
+  }
+
+  //Remove spaces
+  body.description = body.description.trim();
   // add id field
   body.id=todoNextId++;
   // push body into array
