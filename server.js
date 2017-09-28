@@ -20,7 +20,21 @@ app.get('/', function(req, res){
 
 // get todos
 app.get('/todos', function(req,res){
-  res.json(todos);
+  var queryParams = req.query;
+  var filteredTodos = todos;
+
+  // if has property && completed === 'true'/
+  if(queryParams.hasOwnProperty('completed') && queryParams.completed === 'true'){
+    filteredTodos = _.where(filteredTodos, {completed:true});
+  }
+  else if(queryParams.hasOwnProperty('completed') && queryParams.completed === 'false'){
+    filteredTodos = _.where(filteredTodos, {completed:false});
+  }
+
+  // filteredTodos = _.where(filteredTodos, {completed:true}
+  // else
+
+  res.json(filteredTodos);
 });
 
 // get todo/:id - individual item
@@ -100,7 +114,7 @@ app.put('/todos/:id', function(req, res){
   var matchedTodo=_.findWhere(todos, {id:todoId} );
   var body=_.pick(req.body, 'description', 'completed');
   var validAttributes = {};
-  
+
   if(!matchedTodo){
     return res.status(404).json({"error":"no todo found with that id"});
   }
